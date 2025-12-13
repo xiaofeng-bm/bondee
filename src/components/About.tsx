@@ -23,7 +23,7 @@ export const About: React.FC = () => {
             
             <div className="mt-8">
               <img 
-                src="https://gslb.bondee.net/prod/website-pc/static3/resource/language/en/banner.png" 
+                src="/assets/images/banner.png" 
                 alt="Bondee World" 
                 className="rounded-2xl shadow-xl w-full object-cover h-64 hover:scale-[1.02] transition-transform duration-500"
               />
@@ -33,8 +33,8 @@ export const About: React.FC = () => {
           <div className="grid grid-cols-2 gap-4">
              <div className="bg-gray-100 rounded-3xl overflow-hidden h-64 transform translate-y-8 relative group">
                 <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
-                   <source src="https://gslb.bondee.net/prod/website-pc/static3/assets/video/dance2.mov" type="video/mp4" />
-                   <source src="https://gslb.bondee.net/prod/website-pc/static3/assets/video/dance2.mov" type="video/quicktime" />
+                   <source src="/assets/videos/dress-up.mov" type="video/mp4" />
+                   <source src="/assets/videos/dress-up.mov" type="video/quicktime" />
                 </video>
                 <div className="absolute bottom-0 left-0 p-6 bg-gradient-to-t from-black/50 to-transparent w-full">
                   <h3 className="text-xl font-bold text-white">Dress Up</h3>
@@ -43,8 +43,8 @@ export const About: React.FC = () => {
              
              <div className="bg-blue-50 rounded-3xl overflow-hidden h-64 relative group">
                 <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
-                   <source src="https://gslb.bondee.net/prod/website-pc/static3/assets/video/hit2.mov" type="video/mp4" />
-                   <source src="https://gslb.bondee.net/prod/website-pc/static3/assets/video/hit2.mov" type="video/quicktime" />
+                   <source src="/assets/videos/interact.mov" type="video/mp4" />
+                   <source src="/assets/videos/interact.mov" type="video/quicktime" />
                 </video>
                 <div className="absolute bottom-0 left-0 p-6 bg-gradient-to-t from-black/50 to-transparent w-full">
                   <h3 className="text-xl font-bold text-white">Interact</h3>
@@ -53,8 +53,8 @@ export const About: React.FC = () => {
              
              <div className="bg-pink-50 rounded-3xl overflow-hidden h-64 transform translate-y-8 relative group">
                 <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
-                   <source src="https://gslb.bondee.net/prod/website-pc/static3/assets/video/cheers2.mov" type="video/mp4" />
-                   <source src="https://gslb.bondee.net/prod/website-pc/static3/assets/video/cheers2.mov" type="video/quicktime" />
+                   <source src="/assets/videos/party.mov" type="video/mp4" />
+                   <source src="/assets/videos/party.mov" type="video/quicktime" />
                 </video>
                 <div className="absolute bottom-0 left-0 p-6 bg-gradient-to-t from-black/50 to-transparent w-full">
                   <h3 className="text-xl font-bold text-white">Party</h3>

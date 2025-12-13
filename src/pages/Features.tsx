@@ -5,19 +5,19 @@ export const Features: React.FC = () => {
     {
       title: "Dress Up & Express",
       description: "Say goodbye to appearance anxiety! In Bondee, your Avatar is whatever you imagine yourself to be. Pick from a huge variety of trendy outfits.",
-      video: "https://gslb.bondee.net/prod/website-pc/static3/assets/video/dance2.mov",
+      video: "/assets/videos/dress-up.mov",
       bgColor: "bg-[#FFE5F1]"
     },
     {
       title: "Interact with Friends",
       description: "Double tap to 'Boop' your friends! Interact, chat, and express yourself in ways that text just can't capture.",
-      video: "https://gslb.bondee.net/prod/website-pc/static3/assets/video/hit2.mov",
+      video: "/assets/videos/interact.mov",
       bgColor: "bg-[#E0F7FA]"
     },
     {
       title: "Virtual Party",
       description: "Hang out with your besties in your virtual space. Cheers, dance, and make memories together in the metaverse.",
-      video: "https://gslb.bondee.net/prod/website-pc/static3/assets/video/cheers2.mov",
+      video: "/assets/videos/party.mov",
       bgColor: "bg-[#FFF9C4]"
     }
   ];
@@ -87,7 +87,7 @@ export const Features: React.FC = () => {
           {/* Background Image */}
           <div className="absolute inset-0 opacity-30">
             <img 
-              src="https://gslb.bondee.net/prod/website-pc/static3/resource/language/en/banner.png" 
+              src="/assets/images/banner.png" 
               alt="Background" 
               className="w-full h-full object-cover"
             />
