@@ -15,47 +15,40 @@ jobs:
 
     steps:
       # ==================== 步骤 1: 检出代码 ====================
-      # 作用: 将仓库代码下载到 GitHub Runner
       - name: 📥 检出代码
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # 获取完整的 Git 历史
+          fetch-depth: 0
 
       # ==================== 步骤 2: 设置 Node.js 环境 ====================
-      # 作用: 安装指定版本的 Node.js
       - name: 🟢 设置 Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
       # ==================== 步骤 3: 安装 pnpm ====================
-      # 作用: 安装 pnpm 包管理器
       - name: 📦 安装 pnpm
         uses: pnpm/action-setup@v2
         with:
           version: 10
 
       # ==================== 步骤 4: 安装依赖 ====================
-      # 作用: 根据 pnpm-lock.yaml 安装项目依赖
       - name: 📦 安装依赖
         run: pnpm install --frozen-lockfile
 
       # ==================== 步骤 5: 代码质量检查 ====================
-      # 作用: 运行 ESLint 检查代码质量，如果失败则停止部署
       - name: 🔍 代码质量检查
         run: pnpm run lint
-        continue-on-error: false # 失败则停止后续步骤
+        continue-on-error: false
 
       # ==================== 步骤 6: 构建项目 ====================
-      # 作用: 构建生产版本（生成 dist 目录）
       - name: 🔨 构建项目
         run: pnpm run build
         env:
           NODE_ENV: production
 
-      # ==================== 步骤 7: 部署到服务器 ====================
-      # 作用: 通过 SSH 连接到服务器，执行部署脚本
-      - name: 🚀 部署到服务器
+      # ==================== 步骤 7: 备份旧文件 (可选) ====================
+      - name: 📦 备份服务器旧文件
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -63,18 +56,47 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: 22
           script: |
-            echo "连接到服务器成功！"
-            echo "开始执行部署脚本..."
+            # 如果存在旧的 dist，将其重命名备份（只保留一个最近的备份即可，或者按时间戳）
+            if [ -d "/var/www/bondee/dist" ]; then
+              rm -rf /var/www/bondee/dist_backup
+              mv /var/www/bondee/dist /var/www/bondee/dist_backup
+              echo "✅ 旧版本已备份为 dist_backup"
+            fi
+            # 确保目标目录存在
+            mkdir -p /var/www/bondee
 
-            cd ${{ secrets.DEPLOY_PATH }}
-            bash scripts/deploy.sh
+      # ==================== 步骤 8: 上传构建产物 ====================
+      # 核心步骤：把 GitHub 构建好的 dist 传给服务器
+      - name: � 上传 dist 到服务器
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
+          source: "dist"
+          target: "/var/www/bondee"
+          strip_components: 0 # 保持目录结构，即上传后为 /var/www/bondee/dist
 
-            echo "部署脚本执行完成！"
+      # ==================== 步骤 9: 重启 Nginx ====================
+      - name: 🔄 重启 Nginx
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
+          script: |
+            # 确保权限正确 (Nginx 通常运行在 www-data 用户下，或者保持当前用户可读)
+            chmod -R 755 /var/www/bondee/dist
+            
+            # 重载 Nginx 配置
+            sudo systemctl reload nginx
+            echo "✅ Nginx 重载完成"
 
-      # ==================== 步骤 8: 部署结果通知 ====================
-      # 作用: 无论成功失败都执行，输出部署结果
+      # ==================== 步骤 10: 部署结果通知 ====================
       - name: 📢 部署结果通知
-        if: always() # 无论成功失败都执行
+        if: always()
         run: |
           if [ ${{ job.status }} == 'success' ]; then
             echo "✅ 部署成功！"
