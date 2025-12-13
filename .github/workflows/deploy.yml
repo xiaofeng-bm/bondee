@@ -33,7 +33,7 @@ jobs:
       - name: 📦 安装 pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8
+          version: 10
 
       # ==================== 步骤 4: 安装依赖 ====================
       # 作用: 根据 pnpm-lock.yaml 安装项目依赖
