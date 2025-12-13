@@ -22,3 +22,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Deployment
+.env
+.env.local
+.env.production
+deploy_key
+deploy_key.pub
+server_config.txt
+

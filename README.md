@@ -41,22 +41,41 @@ pnpm preview
 
 ## 🌐 部署
 
-本项目支持完整的 CI/CD 自动化部署流程，可快速部署到阿里云或其他云平台。
+本项目支持完整的 CI/CD 自动化部署流程，基于 GitHub Actions 实现自动构建和部署。
 
-### 部署文档
+### 📚 部署文档
 
-- **[CI/CD 方案](./docs/CI_CD_PLAN.md)** - 完整的 CI/CD 实施方案和技术架构
-- **[部署指南](./docs/DEPLOY_GUIDE.md)** - 详细的部署步骤和环境配置
-- **[运维手册](./docs/OPERATIONS.md)** - 日常运维、监控和故障处理
+| 文档                                         | 说明             | 适合人群           |
+| -------------------------------------------- | ---------------- | ------------------ |
+| **[快速开始](./docs/CICD_QUICKSTART.md)**    | 30 分钟快速上手  | 想快速部署的开发者 |
+| **[完整指南](./docs/CICD_GUIDE.md)**         | 详细的原理和步骤 | 想深入理解 CI/CD   |
+| **[配置检查清单](./docs/CICD_CHECKLIST.md)** | 逐项验证配置     | 排查问题时使用     |
+| **[运维手册](./docs/OPERATIONS.md)**         | 日常运维操作     | 运维人员           |
+| **[回滚指南](./docs/ROLLBACK_GUIDE.md)**     | 版本回滚流程     | 紧急情况处理       |
 
-### 快速部署（阿里云）
+### 🚀 快速部署（阿里云）
 
-1. 配置服务器环境（Docker + Nginx）
-2. 设置 GitHub Secrets（服务器凭证）
-3. 推送代码到 main 分支
-4. GitHub Actions 自动构建和部署
+```bash
+# 1. 服务器端一键配置（SSH 登录后执行）
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs nginx git && npm install -g pnpm
 
-详细步骤请查看 [部署指南](./docs/DEPLOY_GUIDE.md)。
+# 2. 配置 GitHub Secrets（在仓库 Settings 中）
+# SERVER_HOST, SERVER_USER, SERVER_SSH_KEY, DEPLOY_PATH
+
+# 3. 推送代码触发自动部署
+git push origin main
+```
+
+完整步骤请查看 **[快速开始指南](./docs/CICD_QUICKSTART.md)**。
+
+### 🎯 工作流程
+
+```
+代码提交 → GitHub Actions → 自动构建 → 部署到服务器 → 自动备份 → 完成
+```
+
+每次 `git push` 自动完成：代码检查 → 构建 → 部署 → 重启服务
 
 ## 📂 项目结构
 
