@@ -115,7 +115,7 @@ mkdir -p scripts logs
 | `ALIYUN_SERVER_PORT`    | SSH 端口            | `22`                                               |
 | `ALIYUN_SERVER_USER`    | SSH 用户名          | `root`                                             |
 | `ALIYUN_SERVER_SSH_KEY` | SSH 私钥            | 见下方说明                                         |
-| `DOCKER_REGISTRY`       | Docker 镜像仓库地址 | `registry.cn-hangzhou.aliyuncs.com/your-namespace` |
+| `DOCKER_REGISTRY`       | Docker 镜像仓库地址 | `registry.cn-hangzhou.aliyuncs.com/your-cd ` |
 | `DOCKER_USERNAME`       | Docker 仓库用户名   | 阿里云账号或 RAM 用户                              |
 | `DOCKER_PASSWORD`       | Docker 仓库密码     | 阿里云密码或 RAM 密码                              |
 
@@ -137,7 +137,55 @@ ssh-keygen -t rsa -b 4096 -C "github-actions" -f ~/.ssh/aliyun_deploy
 ```bash
 # 在服务器上，将公钥添加到 authorized_keys
 cat >> ~/.ssh/authorized_keys << 'EOF'
-# 粘贴 aliyun_deploy.pub 的内容
+-----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAACFwAAAAdzc2gtcn
+NhAAAAAwEAAQAAAgEAuHl9BnJ0AkKSGRTdDQxF1rK0W4yjxQf+2KgV2Eu8yqTXTUJrD61Z
+uRAk8JVrXaEYKnrYNMZgICSLmOC/IsmXHmNO3cfNPVKqhaDq34amJpmm2chReN7jlYSCTK
+wOkrqltYZHdnvQr1uKCSh9XQ4DhLhh8mxybcW8KMu6lcjobGN6ROb6s+HdbjTsTKttyWb+
+8z7HnJfFviSTA75aw5aMfk+U7So6H1H4fIcdhXzY82Xo2N0Rs+vBbRmRboEeb4Y9fSz2Nf
+K42uN7V4pWS8KBoagzKlwvXmnAnBmX1UTkQnL55/eV+zmVxowct89xypB4pptL5KPwsMo7
+vNc3sMI+F+VWvrrDbehlJXGa8ex+TuB051PVu+zRdwh0E/X/E3SlCfooULtSlBPqVy7t7R
+cwn2ABZHU/u/jVGMHVHkjaQV8SeOzhsyGJNwLVqr6nknj2UqKQoYmG2gfxxNcYn6IrEtgu
+HyN4xA3eGMFKn4ifgY27OmX54QCWKPFKcCNQK+L9WCqKCvjRNEt/hIg/M8pThZeRYj2pmL
+slW8X1lYpEs88juv+f1d3AqOqE1Kq6d9y8sU+BjZUjqgb62WKbDmn6Pev03Uo8fZ/lIg4d
+MHfLA2NkPAAchJhNICpG//4saSY+js2p8m9VCoeaetphd0milOWptwdH1l8QEhIhGaEodl
+UAAAdItU0g+7VNIPsAAAAHc3NoLXJzYQAAAgEAuHl9BnJ0AkKSGRTdDQxF1rK0W4yjxQf+
+2KgV2Eu8yqTXTUJrD61ZuRAk8JVrXaEYKnrYNMZgICSLmOC/IsmXHmNO3cfNPVKqhaDq34
+amJpmm2chReN7jlYSCTKwOkrqltYZHdnvQr1uKCSh9XQ4DhLhh8mxybcW8KMu6lcjobGN6
+ROb6s+HdbjTsTKttyWb+8z7HnJfFviSTA75aw5aMfk+U7So6H1H4fIcdhXzY82Xo2N0Rs+
+vBbRmRboEeb4Y9fSz2NfK42uN7V4pWS8KBoagzKlwvXmnAnBmX1UTkQnL55/eV+zmVxowc
+t89xypB4pptL5KPwsMo7vNc3sMI+F+VWvrrDbehlJXGa8ex+TuB051PVu+zRdwh0E/X/E3
+SlCfooULtSlBPqVy7t7Rcwn2ABZHU/u/jVGMHVHkjaQV8SeOzhsyGJNwLVqr6nknj2UqKQ
+oYmG2gfxxNcYn6IrEtguHyN4xA3eGMFKn4ifgY27OmX54QCWKPFKcCNQK+L9WCqKCvjRNE
+t/hIg/M8pThZeRYj2pmLslW8X1lYpEs88juv+f1d3AqOqE1Kq6d9y8sU+BjZUjqgb62WKb
+Dmn6Pev03Uo8fZ/lIg4dMHfLA2NkPAAchJhNICpG//4saSY+js2p8m9VCoeaetphd0milO
+WptwdH1l8QEhIhGaEodlUAAAADAQABAAACAFRz8ePos+lw9pea8JQPoU1oJJ+g5DzIq0ge
+s1mBWt3e115cYM0djGzn0jF+Blgn7vtLn/2RL+KnOG11vqs7ZP6ZcjqgRPqlBMIGaGCKsT
+gMsdEUHxBZ4hDKSCi3wDg2ULSo08CPcHtHSgtlSPc3+i5hhx3Hvh85HioDEtmNz7IHXKt8
+nxuI9KmGewOim7FPgLp1bEbpSLMC5XcaR00xeAI/hquI4HEEQuEnrkE1ZdEQP6hAlOEstj
+GvOeBAJmHiL/ZFhjYud6hl6kqqX1Vxp40NhtcGuvzbJz2Pje4qCuHM51HmC/imZUYvUNpp
+kuusdj+36ueykfctrmmGkc1PL8NS8weJjAK0cKdscmh5Bx/nFR5IhO/YEGgALEm0Gpudaj
+44ONs/eGo/hpibJ7V9zElE6NoBfWnI0SdlIaW4MlxxM+JgxOwvNd73jZpekBLqH2A8M/7e
+2r/8imP6h3V77QJVqqND3Kw6v/I/g3O8MxHq/0+kmKkE6p/zEg/1Fj7bdc3mkwfdMB7L8E
+DiHc9g14Uo1ua7fOrOEYHHLzpBV54xnWKq8RCsvw7KvaQARnM5bHlbZwbvuAIY4K48GsJA
+Lvrehht5eIVOHbym7RHCoqwn53AJjvidIbuo0D/bTGpM6j5kai/PaR4LW04hKUCERoskP5
+63brxKmj6sJw6gLLmlAAABACk0p6CIks97y3f91Gh8kcjHv36UpBpcVWmjkCm6sLPTmD0q
+/KuG9+h0fniEQXZekdUwJmUilooGTkhyCSXTWUWfMD/V5iDeQT9/KZ7JTxmRhHBg9d3a0v
+wQ/7wzMkxI/VEfxqT63TPH+9yxXhV2DM8aqwny7z0TDy9DdPyWBo6wiIAJL5p6zTqR+K70
+Z+Demkak4LbJtyePraSHBmKkxic6JC4z0uWtV1jZWPHX9OrptLpy7V/3yWFEAzCu2omeuv
+xQIAI6WzdUdb8QbBtRIEDXvE3QHBSiegRTBO7G95AyVa3hy7CWcqeYZZGk1OcqQKhrx4AY
+WlriiksBxizCQJEAAAEBAO7QhYxB74Lwdp+JSWusPzba0EuKWrMrqjrn2mozdlakoE2Z1H
+gtjO8jPjXzskxO5shutyAPgeeY022DeNgoLu0+mgbs0H/MGLF0tOphYfQHhFEPRkJYKVa/
+kKBmUq8fHfHu7UNKLT4WUzRtxqcP0KH0B1UsQaEA30vxMcJb/xzu1EoYkkADwByNXMgWuI
++P59mSiWI4Oi3Rz9P9HDQp0nOTTQnhms9Jf7t4BUXKxuoAn4uolK3WCiKiiSjvHev+9X2c
+9cwTCfrpxLQYKpuVjByIbO1H7VtZfB8xPxRkSWx3WLfHhvpDr5+J2sK5oO2LexI9pZN96L
+RNA4P8KckvWPMAAAEBAMW/6EWSrz2sn3yiew41Cd3/7AgjlMl14YyJTJiDvz82E6Dourv8
+CCAabuNjOY87qU8JjWSNQzze/e+IbRFEhKFIUSjfz3mpRTa+d+fK7wxBZ+O5dPzZxI2lhk
+ec115Y0tLNM5P0DjYo+3RcJlD65pTJm9QGFdMqy4EaP4VTd1MPDuJ5fQU4Nl10vxRb+H1E
+Y2tq6iQDu6Zq73zcvVo3/0DlLiSJmNsNEDyNor6Zq8dQv+5aY9oPsFojRBgLkYR/mHyra5
+IYBZQc4djMLqOxzZHCnOtvlyBUsOWnXPe0VP28F0CELTUvjDQAQ7LgD4Op0mTKww4wTa4e
+gXETkRAYxZcAAAAOZ2l0aHViLWFjdGlvbnMBAgMEBQ==
+-----END OPENSSH PRIVATE KEY-----
 EOF
 
 # 设置正确的权限
