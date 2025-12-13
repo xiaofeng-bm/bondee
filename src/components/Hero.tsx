@@ -15,7 +15,7 @@ export const Hero: React.FC = () => {
           {/* Left Content */}
           <div className="flex-1 text-center md:text-left">
             <h1 className="text-6xl md:text-8xl font-black text-gray-900 mb-6 leading-tight tracking-tight">
-              Live with your1 <br />
+              Live with your2 <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
                 best friends
               </span>
