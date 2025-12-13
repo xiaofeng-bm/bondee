@@ -1,0 +1,160 @@
+name: Rollback to Previous Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "要回滚到的版本标签（留空则回滚到 previous 版本）"
+        required: false
+        default: "previous"
+        type: string
+
+env:
+  DOCKER_IMAGE_NAME: bondee
+  DEPLOY_PATH: /opt/bondee
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Display rollback info
+        run: |
+          echo "🔄 准备回滚到版本: ${{ inputs.version }}"
+          echo "目标服务器: ${{ secrets.ALIYUN_SERVER_HOST }}"
+
+      - name: Execute rollback on server
+        uses: appleboy/ssh-action@v1.0.0
+        env:
+          ROLLBACK_TAG: ${{ inputs.version }}
+          DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_IMAGE_NAME: ${{ env.DOCKER_IMAGE_NAME }}
+          DEPLOY_PATH: ${{ env.DEPLOY_PATH }}
+        with:
+          host: ${{ secrets.ALIYUN_SERVER_HOST }}
+          port: ${{ secrets.ALIYUN_SERVER_PORT }}
+          username: ${{ secrets.ALIYUN_SERVER_USER }}
+          key: ${{ secrets.ALIYUN_SERVER_SSH_KEY }}
+          envs: ROLLBACK_TAG,DOCKER_REGISTRY,DOCKER_USERNAME,DOCKER_PASSWORD,DOCKER_IMAGE_NAME,DEPLOY_PATH
+          script: |
+            cd ${DEPLOY_PATH}
+
+            echo "=========================================="
+            echo "开始回滚 Bondee 应用"
+            echo "时间: $(date '+%Y-%m-%d %H:%M:%S')"
+            echo "=========================================="
+
+            # 登录 Docker Registry（如果需要）
+            echo "${DOCKER_PASSWORD}" | docker login ${DOCKER_REGISTRY} -u "${DOCKER_USERNAME}" --password-stdin
+
+            # 1. 查看可用的镜像版本
+            echo ""
+            echo "📋 可用的镜像版本："
+            docker images ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME} --format "table {{.Tag}}\t{{.CreatedAt}}\t{{.Size}}" | head -10
+
+            # 2. 设置回滚版本
+            echo ""
+            echo "🔄 回滚到版本: ${ROLLBACK_TAG}"
+
+            # 3. 检查目标镜像是否存在
+            if ! docker images ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${ROLLBACK_TAG} -q | grep -q .; then
+              echo "❌ 错误: 镜像版本 ${ROLLBACK_TAG} 不存在"
+              echo "可用版本："
+              docker images ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME} --format "{{.Tag}}"
+              exit 1
+            fi
+
+            # 4. 设置镜像版本
+            export DOCKER_IMAGE="${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${ROLLBACK_TAG}"
+
+            # 5. 停止当前容器
+            echo ""
+            echo "🛑 停止当前容器..."
+            docker compose down --timeout 30
+
+            # 6. 更新 docker-compose 使用指定版本
+            # 临时设置环境变量，让 docker-compose 使用指定版本
+            echo "DOCKER_IMAGE=${DOCKER_IMAGE}" > .env.rollback
+
+            # 7. 启动指定版本
+            echo ""
+            echo "🚀 启动版本 ${ROLLBACK_TAG}..."
+            docker compose --env-file .env.rollback up -d
+
+            # 8. 等待服务就绪
+            echo ""
+            echo "⏳ 等待服务就绪..."
+            sleep 10
+
+            # 9. 健康检查
+            echo ""
+            echo "🔍 执行健康检查..."
+            MAX_RETRIES=10
+            RETRY_COUNT=0
+
+            while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+                if curl -f http://localhost/health > /dev/null 2>&1; then
+                    echo "✅ 健康检查通过！"
+                    break
+                else
+                    RETRY_COUNT=$((RETRY_COUNT + 1))
+                    echo "⏳ 等待服务启动... ($RETRY_COUNT/$MAX_RETRIES)"
+                    sleep 3
+                fi
+                
+                if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+                    echo "❌ 回滚后健康检查失败"
+                    echo "查看日志："
+                    docker compose logs --tail=50
+                    exit 1
+                fi
+            done
+
+            # 10. 清理临时文件
+            rm -f .env.rollback
+
+            # 11. 显示运行状态
+            echo ""
+            echo "=========================================="
+            echo "📊 回滚后状态"
+            echo "=========================================="
+            docker compose ps
+
+            echo ""
+            echo "=========================================="
+            echo "🎉 回滚完成！"
+            echo "当前版本: ${ROLLBACK_TAG}"
+            echo "时间: $(date '+%Y-%m-%d %H:%M:%S')"
+            echo "=========================================="
+
+      - name: Verify rollback
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.ALIYUN_SERVER_HOST }}
+          port: ${{ secrets.ALIYUN_SERVER_PORT }}
+          username: ${{ secrets.ALIYUN_SERVER_USER }}
+          key: ${{ secrets.ALIYUN_SERVER_SSH_KEY }}
+          script: |
+            cd ${{ env.DEPLOY_PATH }}
+
+            # 最终验证
+            if curl -f http://localhost/health > /dev/null 2>&1; then
+              echo "✅ 回滚验证成功！"
+              echo "当前运行的容器："
+              docker compose ps
+            else
+              echo "❌ 回滚验证失败"
+              exit 1
+            fi
+
+      - name: Notify rollback status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "🎉 回滚成功！"
+            echo "已回滚到版本: ${{ inputs.version }}"
+          else
+            echo "❌ 回滚失败，请检查日志"
+          fi
