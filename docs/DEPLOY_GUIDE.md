@@ -140,7 +140,7 @@ ssh-keygen -t rsa -b 4096 -C "github-actions" -f ~/.ssh/aliyun_deploy
 # 然后在服务器执行：
 
 cat >> ~/.ssh/authorized_keys << 'EOF'
-# 粘贴 aliyun_deploy.pub 的内容（注意是 .pub 公钥文件，不是私钥！）
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC4eX0GcnQCQpIZFN0NDEXWsrRbjKPFB/7YqBXYS7zKpNdNQmsPrVm5ECTwlWtdoRgqetg0xmAgJIuY4L8iyZceY07dx809UqqFoOrfhqYmmabZyFF43uOVhIJMrA6SuqW1hkd2e9CvW4oJKH1dDgOEuGHybHJtxbwoy7qVyOhsY3pE5vqz4d1uNOxMq23JZv7zPsecl8W+JJMDvlrDlox+T5TtKjofUfh8hx2FfNjzZejY3RGz68FtGZFugR5vhj19LPY18rja43tXilZLwoGhqDMqXC9eacCcGZfVRORCcvnn95X7OZXGjBy3z3HKkHimm0vko/Cwyju81zewwj4X5Va+usNt6GUlcZrx7H5O4HTnU9W77NF3CHQT9f8TdKUJ+ihQu1KUE+pXLu3tFzCfYAFkdT+7+NUYwdUeSNpBXxJ47OGzIYk3AtWqvqeSePZSopChiYbaB/HE1xifoisS2C4fI3jEDd4YwUqfiJ+Bjbs6ZfnhAJYo8UpwI1Ar4v1YKooK+NE0S3+EiD8zylOFl5FiPamYuyVbxfWVikSzzyO6/5/V3cCo6oTUqrp33LyxT4GNlSOqBvrZYpsOafo96/TdSjx9n+UiDh0wd8sDY2Q8AByEmE0gKkb//ixpJj6Ozanyb1UKh5p62mF3SaKU5am3B0fWXxASEiEZoSh2VQ== github-actions
 EOF
 
 # 设置正确的权限

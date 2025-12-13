@@ -57,39 +57,31 @@ jobs:
             ${{ secrets.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}
 
       - name: Deploy to server
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.ALIYUN_SERVER_SSH_KEY }}
-        run: |
-          # 创建 SSH 密钥文件
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-
-          # 添加服务器到 known_hosts
-          ssh-keyscan -H ${{ secrets.ALIYUN_SERVER_HOST }} >> ~/.ssh/known_hosts
-
-          # SSH 连接并部署
-          ssh -i ~/.ssh/deploy_key \
-              -o StrictHostKeyChecking=no \
-              ${{ secrets.ALIYUN_SERVER_USER }}@${{ secrets.ALIYUN_SERVER_HOST }} << 'ENDSSH'
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.ALIYUN_SERVER_HOST }}
+          port: ${{ secrets.ALIYUN_SERVER_PORT }}
+          username: ${{ secrets.ALIYUN_SERVER_USER }}
+          key: ${{ secrets.ALIYUN_SERVER_SSH_KEY }}
+          script: |
             cd ${{ env.DEPLOY_PATH }}
-            
+
             # 设置环境变量
             export DOCKER_IMAGE=${{ secrets.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_NAME }}:latest
-            
+
             # 拉取最新镜像
             docker compose pull
-            
+
             # 重启服务（零停机）
             docker compose up -d --force-recreate
-            
+
             # 清理旧镜像
             docker image prune -f
-            
+
             # 健康检查
             echo "等待服务启动..."
             sleep 10
-            
+
             if curl -f http://localhost/health; then
               echo "✓ 部署成功！服务健康检查通过"
             else
@@ -97,7 +89,6 @@ jobs:
               docker compose logs --tail=50
               exit 1
             fi
-          ENDSSH
 
       - name: Notify deployment status
         if: always()
