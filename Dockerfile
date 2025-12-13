@@ -4,14 +4,14 @@ FROM node:18-alpine AS builder
 # 设置工作目录
 WORKDIR /app
 
-# 安装 pnpm
-RUN npm install -g pnpm
+# 安装 pnpm（指定版本避免兼容性问题）
+RUN npm install -g pnpm@8
 
 # 复制 package.json 和 lockfile
 COPY package.json pnpm-lock.yaml ./
 
 # 安装依赖
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # 复制源代码
 COPY . .
