@@ -1,0 +1,100 @@
+name: Deploy to Alibaba Cloud
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  DOCKER_IMAGE_NAME: bondee
+  DEPLOY_PATH: /opt/bondee
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build
+        run: pnpm build
+
+      - name: Login to Alibaba Cloud Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.DOCKER_REGISTRY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_NAME }}:latest
+            ${{ secrets.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.ALIYUN_SERVER_HOST }}
+          port: ${{ secrets.ALIYUN_SERVER_PORT }}
+          username: ${{ secrets.ALIYUN_SERVER_USER }}
+          key: ${{ secrets.ALIYUN_SERVER_SSH_KEY }}
+          script: |
+            cd ${{ env.DEPLOY_PATH }}
+
+            # 设置环境变量
+            export DOCKER_IMAGE=${{ secrets.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_NAME }}:latest
+
+            # 拉取最新镜像
+            docker compose pull
+
+            # 重启服务（零停机）
+            docker compose up -d --force-recreate
+
+            # 清理旧镜像
+            docker image prune -f
+
+            # 健康检查
+            echo "等待服务启动..."
+            sleep 10
+
+            if curl -f http://localhost/health; then
+              echo "✓ 部署成功！服务健康检查通过"
+            else
+              echo "✗ 部署后健康检查失败"
+              docker compose logs --tail=50
+              exit 1
+            fi
+
+      - name: Notify deployment status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "🎉 部署成功！"
+          else
+            echo "❌ 部署失败，请检查日志"
+          fi
