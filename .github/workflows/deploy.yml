@@ -46,61 +46,51 @@ jobs:
         run: pnpm run build
         env:
           NODE_ENV: production
+          VITE_CDN_URL: https://${{ secrets.CDN_DOMAIN }}/ # 全站 CDN URL
 
-      # ==================== 步骤 7: 备份旧文件 (可选) ====================
-      - name: 📦 备份服务器旧文件
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          port: 22
-          script: |
-            # 如果存在旧的 dist，将其重命名备份（只保留一个最近的备份即可，或者按时间戳）
-            if [ -d "/var/www/bondee/dist" ]; then
-              rm -rf /var/www/bondee/dist_backup
-              mv /var/www/bondee/dist /var/www/bondee/dist_backup
-              echo "✅ 旧版本已备份为 dist_backup"
-            fi
-            # 确保目标目录存在
-            mkdir -p /var/www/bondee
+      # ==================== 步骤 7: 上传到阿里云 OSS (全站 CDN) ====================
+      - name: 📤 上传全站资源到阿里云 OSS
+        env:
+          ALIYUN_ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+          ALIYUN_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+          ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+          ALIYUN_OSS_REGION: ${{ secrets.ALIYUN_OSS_REGION }}
+        run: |
+          echo "📦 安装 ossutil..."
+          # 下载 ossutil (Linux AMD64)
+          wget -q https://gosspublic.alicdn.com/ossutil/install.sh
+          sudo bash install.sh
 
-      # ==================== 步骤 8: 上传构建产物 ====================
-      # 核心步骤：把 GitHub 构建好的 dist 传给服务器
-      - name: � 上传 dist 到服务器
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          port: 22
-          source: "dist"
-          target: "/var/www/bondee"
-          strip_components: 0 # 保持目录结构，即上传后为 /var/www/bondee/dist
+          echo "⚙️  配置 ossutil..."
+          # 配置 ossutil
+          ossutil config -e ${ALIYUN_OSS_REGION}.aliyuncs.com \
+            -i ${ALIYUN_ACCESS_KEY_ID} \
+            -k ${ALIYUN_ACCESS_KEY_SECRET} \
+            -L CH \
+            -c /home/runner/.ossutilconfig
 
-      # ==================== 步骤 9: 重启 Nginx ====================
-      - name: 🔄 重启 Nginx
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          port: 22
-          script: |
-            # 确保权限正确 (Nginx 通常运行在 www-data 用户下，或者保持当前用户可读)
-            chmod -R 755 /var/www/bondee/dist
-            
-            # 重载 Nginx 配置
-            sudo systemctl reload nginx
-            echo "✅ Nginx 重载完成"
+          echo "📤 上传全站资源到 OSS..."
+          # 上传整个 dist 目录（增量更新）
+          ossutil cp -r dist/ oss://${ALIYUN_OSS_BUCKET}/ \
+            --update \
+            --config-file /home/runner/.ossutilconfig
 
-      # ==================== 步骤 10: 部署结果通知 ====================
+          echo "✅ 全站资源已上传到 OSS"
+          echo "🌐 CDN 访问地址: https://cdn.slyai.top/"
+
+      # 全站 CDN 模式：资源已全部上传到 OSS，无需上传到服务器
+      # 如需保留服务器作为备用，可取消注释以下步骤
+
+      # ==================== 步骤 8: 部署结果通知 ====================
       - name: 📢 部署结果通知
         if: always()
         run: |
           if [ ${{ job.status }} == 'success' ]; then
-            echo "✅ 部署成功！"
-            echo "🌐 访问地址: http://${{ secrets.SERVER_HOST }}"
+            echo "✅ 全站 CDN 部署成功！"
+            echo "🌐 CDN 访问地址: https://${{ secrets.CDN_DOMAIN }}/"
+            echo "📄 首页: https://${{ secrets.CDN_DOMAIN }}/index.html"
+            echo ""
+            echo "💡 提示: 如需刷新 CDN 缓存，请访问阿里云 CDN 控制台"
           else
             echo "❌ 部署失败！请检查日志"
           fi
